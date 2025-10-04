@@ -1,10 +1,10 @@
-"""Gemini LLM client adapter."""
+"""Gemini LLM client adapter (OpenAI-compatible endpoint)."""
 
 import json
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-import google.generativeai as genai
+from openai import OpenAI
 
 from ..config.settings import Settings
 from ..domain.models import ChatResult, Message
@@ -15,9 +15,12 @@ class GeminiLLM(LLMClient):
     """Gemini LLM client with tool calling support."""
 
     def __init__(self, settings: Settings) -> None:
-        """Initialize the Gemini client."""
-        genai.configure(api_key=settings.google_api_key)
+        """Initialize the Gemini client using OpenAI-compatible endpoint."""
         self._timeout = settings.request_timeout_secs
+        self._client = OpenAI(
+            api_key=settings.google_api_key,
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+        )
 
     def _to_gemini(self, message: Message) -> dict[str, Any]:
         """Convert Message to Gemini format."""
@@ -29,92 +32,105 @@ class GeminiLLM(LLMClient):
         tools: Mapping[str, tuple[dict[str, Any], ToolHandler]],
         model: str,
     ) -> ChatResult:
-        """Chat with tool calling support."""
-        # Define tool schemas for Gemini function calling
-        tool_defs = []
-        for name, (schema, _handler) in tools.items():
-            tool_defs.append(
-                {
-                    "function_declarations": [
-                        {
-                            "name": name,
-                            "description": f"Tool for {name.replace('_', ' ')}",
-                            "parameters": schema,
-                        }
-                    ]
-                }
-            )
+        """Chat with tool calling support using OpenAI-compatible Chat Completions API."""
 
-        # Build the chat session
-        model_obj = genai.GenerativeModel(model_name=model, tools=tool_defs)
-        transcript = list(messages)
+        # Build OpenAI-compatible tools list
+        tools_list = [
+            {
+                "type": "function",
+                "function": {
+                    "name": name,
+                    "description": f"Tool for {name.replace('_', ' ')}",
+                    "parameters": schema,
+                },
+            }
+            for name, (schema, _handler) in tools.items()
+        ]
+
+        # Build initial payload from messages (system/user/assistant/tool)
+        payload: list[dict[str, Any]] = [
+            {
+                "role": m.role,
+                "content": m.content,
+                **({"name": m.name} if getattr(m, "name", None) else {}),
+                **({"tool_call_id": m.tool_call_id} if getattr(m, "tool_call_id", None) else {}),
+            }
+            for m in messages
+        ]
         max_iters = 8
 
         for _ in range(max_iters):
             try:
-                resp = model_obj.generate_content(
-                    [self._to_gemini(m) for m in transcript],
-                    request_options={"timeout": self._timeout},
+                resp = self._client.chat.completions.create(
+                    model=model,
+                    messages=payload,
+                    tools=tools_list if tools_list else None,
+                    tool_choice="auto",
+                    timeout=self._timeout,
                 )
             except Exception as e:
-                # Handle API errors gracefully
                 text = f"(API error: {e!s})"
-                transcript.append(Message(role="assistant", content=text))
-                return ChatResult(messages=tuple(transcript), final_text=text)
+                return ChatResult(messages=tuple(messages), final_text=text)
 
-            if not resp.candidates:
-                text = "(No response from model)"
-                transcript.append(Message(role="assistant", content=text))
-                return ChatResult(messages=tuple(transcript), final_text=text)
+            choice = resp.choices[0]
+            msg = choice.message
 
-            cand = resp.candidates[0]
-            if not cand.content or not cand.content.parts:
-                text = "(Empty response)"
-                transcript.append(Message(role="assistant", content=text))
-                return ChatResult(messages=tuple(transcript), final_text=text)
+            if getattr(msg, "tool_calls", None):
+                # Append assistant message with tool_calls to payload
+                payload.append(
+                    {
+                        "role": "assistant",
+                        "content": msg.content or "",
+                        "tool_calls": [
+                            {
+                                "id": tc.id,
+                                "type": "function",
+                                "function": {
+                                    "name": tc.function.name,
+                                    "arguments": tc.function.arguments,
+                                },
+                            }
+                            for tc in msg.tool_calls
+                        ],
+                    }
+                )
 
-            parts = cand.content.parts
-            did_call_tool = False
-
-            for part in parts:
-                if hasattr(part, "function_call") and part.function_call:
-                    did_call_tool = True
-                    fc = part.function_call
-                    name = fc.name
-                    args = json.loads(fc.args) if isinstance(fc.args, str) else dict(fc.args)
+                # Execute tools and append tool results messages with tool_call_id
+                for tc in msg.tool_calls:
+                    name = tc.function.name
+                    args = (
+                        json.loads(tc.function.arguments)
+                        if isinstance(tc.function.arguments, str)
+                        else dict(tc.function.arguments)
+                    )
                     _schema, handler = tools.get(name, ({}, lambda _a: {}))
-
                     try:
                         result = handler(args)
-                        transcript.append(Message(role="assistant", content="", name=name))
-                        transcript.append(
-                            Message(
-                                role="tool",
-                                name=name,
-                                content=json.dumps(result),
-                            )
+                        payload.append(
+                            {
+                                "role": "tool",
+                                "tool_call_id": tc.id,
+                                "name": name,
+                                "content": json.dumps(result),
+                            }
                         )
                     except Exception as e:
-                        # Handle tool execution errors
                         error_result = {"error": str(e)}
-                        transcript.append(Message(role="assistant", content="", name=name))
-                        transcript.append(
-                            Message(
-                                role="tool",
-                                name=name,
-                                content=json.dumps(error_result),
-                            )
+                        payload.append(
+                            {
+                                "role": "tool",
+                                "tool_call_id": tc.id,
+                                "name": name,
+                                "content": json.dumps(error_result),
+                            }
                         )
 
-            if did_call_tool:
+                # Continue loop to allow the model to read tool outputs
                 continue
 
             # Regular assistant text
-            text = cand.content.parts[0].text if cand.content.parts else ""
-            transcript.append(Message(role="assistant", content=text))
-            return ChatResult(messages=tuple(transcript), final_text=text)
+            text = msg.content or ""
+            return ChatResult(messages=tuple(messages), final_text=text)
 
-        # Safety valve - tool loop exceeded
         text = "(tool loop exceeded)"
-        transcript.append(Message(role="assistant", content=text))
-        return ChatResult(messages=tuple(transcript), final_text=text)
+        return ChatResult(messages=tuple(messages), final_text=text)
