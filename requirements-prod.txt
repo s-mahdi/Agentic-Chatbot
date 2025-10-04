@@ -11,13 +11,6 @@ annotated-types==0.7.0 \
 anyio==4.11.0 \
     --hash=sha256:0287e96f4d26d4149305414d4e3bc32f0dcd0862365a4bddea19d7a1ec38c4fc \
     --hash=sha256:82a8d0b81e318cc5ce71a5f1f8b5c4e63619620b63141ef8c995fa0db95a57c4
-    # via
-    #   gradio
-    #   httpx
-    #   openai
-    #   starlette
-# audioop-lts==0.2.2  # Removed: requires Python 3.13+, not needed for chatbot functionality
-    # via gradio
 brotli==1.1.0 \
     --hash=sha256:3c0ef38c7a7014ffac184db9e04debe495d317cc9c6fb10071f7fefd93100a4f \
     --hash=sha256:43395e90523f9c23a3d5bdf004733246fba087f2948f87ab28015f12359ca6a0 \
