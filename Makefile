@@ -9,11 +9,11 @@ install: ## Install dependencies
 
 dev: ## Start the chatbot in development mode
 	@echo "Starting agentic chatbot..."
-	uv run python main.py
+	uv run python app.py
 
 start: ## Start the chatbot
 	@echo "Starting agentic chatbot..."
-	uv run python main.py
+	uv run python app.py
 
 lint: ## Run linting
 	uv run ruff check src/

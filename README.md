@@ -84,7 +84,7 @@ agentic-chatbot/
 │   └── summary.txt        # Professional summary
 ├── pyproject.toml         # Project configuration
 ├── .env.example          # Environment variables template
-├── main.py               # Main entry point
+├── app.py                # Main entry point
 └── README.md             # This file
 ```
 
@@ -100,7 +100,7 @@ agentic-chatbot/
    make dev
    
    # Using direct commands
-   uv run python main.py
+   uv run python app.py
    ```
 
 3. **Access the interface**
@@ -167,7 +167,7 @@ make test         # Run tests
 make clean        # Clean up temporary files
 
 # Using uv directly
-uv run python main.py                           # Start chatbot
+uv run python app.py                            # Start chatbot
 uv run ruff check src/                          # Lint code
 uv run ruff format src/                         # Format code
 uv run mypy src/ --ignore-missing-imports      # Type check
