@@ -1,3 +1,9 @@
+---
+title: Agentic_Chatbot
+app_file: app.py
+sdk: gradio
+sdk_version: 5.49.0
+---
 # Agentic Chatbot
 
 A clean architecture AI-powered chatbot built with functional programming principles, featuring Google Gemini integration and a professional web interface.
@@ -83,6 +89,8 @@ agentic-chatbot/
 │   ├── linkedin.pdf       # LinkedIn profile PDF
 │   └── summary.txt        # Professional summary
 ├── pyproject.toml         # Project configuration
+├── requirements.txt       # Development dependencies
+├── requirements-gradio.txt # Production dependencies (Python 3.10 compatible)
 ├── .env.example          # Environment variables template
 ├── app.py                # Main entry point
 └── README.md             # This file
@@ -103,7 +111,13 @@ agentic-chatbot/
    uv run python app.py
    ```
 
-3. **Access the interface**
+3. **Deploy to Gradio**
+   ```bash
+   # For Gradio deployment, use the Python 3.10 compatible requirements
+   pip install -r requirements-gradio.txt
+   ```
+
+4. **Access the interface**
    - Open your browser and navigate to the URL shown in the terminal
    - Typically: `http://127.0.0.1:7860`
 
@@ -131,6 +145,18 @@ agentic-chatbot/
 - **Use Cases**: Pure functions for business logic
 - **Adapters**: Gemini, Pushover, and PyPDF implementations
 - **Tool Registry**: Type-safe tool definitions with validation
+
+## 🚀 Deployment
+
+### Gradio Deployment
+
+For deploying to Gradio Spaces or similar platforms that use Python 3.10, use the `requirements-gradio.txt` file which excludes packages that require Python 3.13+:
+
+```bash
+pip install -r requirements-gradio.txt
+```
+
+**Note**: The `requirements-gradio.txt` file excludes `audioop-lts` which requires Python 3.13+. This package is not needed for the chatbot functionality as it only provides audio processing capabilities that aren't used in this application.
 
 ## 🔧 Configuration
 
