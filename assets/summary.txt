@@ -1,0 +1,50 @@
+Delivering Front‑End Engineer with 5+ years in React/Next.js & TypeScript.
+I help product & SaaS teams modernize legacy front‑ends, reduce page load by 20–40%, stabilize testing/CI to cut build time by ~25%, and accelerate UI delivery by ~25%—on products used by 100K+ users. 
+Impact snapshots:
+
+ 💠 Reduced 20% initial load via feature‑flagged Backbone→React migration (webpack/code‑splitting), improving first‑interaction speed.
+
+💠 Cut 25% CI time by stabilizing E2E/integration/unit tests (Jest/Vitest/Playwright/Cypress), increasing release cadence.
+
+ 💠 Decreased 40% page load with granular lazy‑loading, boosting task completion on a critical workflow.
+
+ 💠 Improved +15% team productivity by shipping real‑time meetings/chat (WebRTC/mediasoup with React/Next.js), shortening decision cycles.
+
+Culture & ways of working:
+Mentor & code reviewer (grew juniors’ delivery up to +40%), facilitation with design/product, usability testing with end users, Agile/Scrum, and async‑first remote.
+
+
+💡Tech & keywords:
+Front‑end & UI: React, Next.js, TypeScript, JavaScript (ES6+), HTML5, CSS3, WCAG/a11y, responsive UI, Radix UI, Headless UI, MUI, Tailwind CSS, i18n (next‑intl/Transifex).
+
+
+Data & State: Redux Toolkit, RTK Query, React Query, Apollo GraphQL, Zustand.
+
+
+Design System & Styling: Storybook, design tokens, CSS Modules.
+
+
+Testing & Quality: Jest, React Testing Library, Vitest, Playwright, Cypress, MSW, Percy, Codecov, Sentry, Code Climate
+
+
+Build & DX (Monorepo): Vite, Webpack, Turbopack, Turborepo, pnpm/Yarn workspaces, ESLint, Prettier, Husky, Semantic Release.
+
+
+Real‑time & Media: WebSocket, WebRTC, Pusher, Stream, mediasoup.
+
+
+Auth & Security: Auth0, Clerk, NextAuth, Ory (Kratos), OAuth2/OIDC, JWT, Passkeys, CSP/HSTS, rate‑limiting.
+
+
+CI/CD, Ops & Observability: GitHub Actions, CircleCI, Bitbucket Pipelines, Docker, Kubernetes, Sentry, Datadog, PostHog, Better Stack.
+
+
+Back‑end & Data (exposure): Node.js, NestJS/Express, PostgreSQL, REST/GraphQL, GraphQL Codegen.
+
+
+Also worked with: Electron, D3.js, Chart.js, Backbone.
+
+
+I get excited about opportunities where I lead legacy→modern migrations, build design systems that speed teams up, own performance/Core Web Vitals, and strengthen testing/CI for reliable releases.
+
+I love connecting with new people, feel free to reach me at: mahdi.hosseini.dev@gmail.com
